@@ -91,7 +91,7 @@
   // the goods
   const main = async (): Promise<any> => {
     // return false
-    const utxoSet: UTXOSet = await xchain.getUTXOs(xAddresses)
+    const utxoSet: UTXOSet = await xchain.getUTXOs(xAddressStrings)
     const memoBuf: Buffer = bintools.stringToBuffer("Avalanche.js")
     const memoCB58: string = bintools.cb58Encode(memoBuf)
     const memo: Buffer = bintools.stringToBuffer(memoCB58)
