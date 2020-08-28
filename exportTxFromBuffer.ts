@@ -73,7 +73,7 @@
   const protocol: string = "http"
   const networkID: number = 12345
   const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
-  const amount: BN = new BN(999999999000000)
+  const amount: BN = new BN(54321)
   const xchain: AVMAPI = avalanche.XChain()
   const bintools: BinTools = BinTools.getInstance()
   const xKeychain: AVMKeyChain = xchain.keyChain()
@@ -90,23 +90,13 @@
   
   // the goods
   const main = async (): Promise<any> => {
-    // return false
-    const utxoSet: UTXOSet = await xchain.getUTXOs(xAddressStrings)
-    const memoBuf: Buffer = bintools.stringToBuffer("Avalanche.js")
-    const memoCB58: string = bintools.cb58Encode(memoBuf)
-    const memo: Buffer = bintools.stringToBuffer(memoCB58)
-    const unsignedTx: UnsignedTx = await xchain.buildExportTx(
-        utxoSet,
-        amount,
-        PlatformChainID,
-        pAddressStrings,
-        xAddressStrings,
-        xAddressStrings,
-        memo
-    )
-    const tx: Tx =  unsignedTx.sign(xKeychain)
-    const txid: string = await xchain.issueTx(tx)
-    console.log(`TXID: ${txid}`)
+    const t: string = "11111aaSjoyub6fozCTZokAqxknusD6pCKaXjvgMJbhMS8TdbQYSZZN3NSS1g6dBk4n5qF1tyV3xePpGdAA9VjMnaQpkAaue9J7ynxGU6GoBPE1YyhXFaSKK8ijk9SW8XrrKtvxx4D4qLU8etjnjV8TrxfyN1kA1kQkEqZbYCcv76Z7q6fgGWo4jDWXi7v9PdLJAwcwvddQksf2tzxEnezkgBtfMuJLhF4XiFdiQwfY2ZtuvSC26G91pSynGHcnfK8eCmUtdYB8DwGGnTKmmaQ2aieYc4paCa425FKbCae1UpLYjMUVP1aCBgQRK6AfB75WqgWqAr4hxKFmZLq18FQK2Bt2zpXffB4aNXcSve1V9bsjdDw3Jk2eN42qBUToRBaM4TWvr9VXXS7n8ZVDgjFj7ttuzjN3kG62jcU3xkFKyQ69wjMkgpLEFN1jCrCrDAimbt1QF3b6TNqPRjXeQ9VdCXsbTY89Vi22ZHqLsULPrTeKibNDyG67gTGNnEAKXGATANuCAW6EQkrs6EVZj5JRsvohjb9bqthmNMXYpUGYFV5pD4PVkDfkGtby74wMCgxaQRFURjYWrBVCQTX8poLhTK2LSc"
+    const tx: Tx =  new Tx()
+    const buf: Buffer = bintools.stringToBuffer(t)
+    console.log(t)
+    console.log(buf)
+    tx.fromBuffer(buf)
+    console.log(tx)
   }
   
   main()
