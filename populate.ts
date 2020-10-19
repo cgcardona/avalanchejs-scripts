@@ -6,19 +6,27 @@ import {
   Tx,
   UnsignedTx, 
   UTXOSet,
-} from "avalanche/dist/apis/avm";
+  TransferableInput,
+  TransferableOutput,
+  AssetAmountDestination,
+  TransferableOperation,
+  NFTMintOperation,
+  NFTTransferOutput,
+  UTXO,
+  OperationTx,
+  AVMConstants,
+  NFTMintOutput
+} from "avalanche/dist/apis/avm"
 import {
-  UnixNow, 
-  UTF8Payload, 
-  URLPayload
-} from "avalanche/dist/utils";
-import { OutputOwners } from "avalanche/dist/common";
+  URLPayload, UnixNow, Defaults
+} from "avalanche/dist/utils"
+import { OutputOwners } from "avalanche/dist/common"
 import { 
   Avalanche, 
   BinTools, 
   BN, 
   Buffer 
-} from 'avalanche';
+} from 'avalanche'
 
 // consts
 const ip: string = "localhost"
@@ -43,10 +51,8 @@ const sleep = (ms: number): Promise<unknown> => {
 // Create NFTs from the faucet private key (local)
 myKeychain.importKey("PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN")
 
-const createNFT = async (name: string, symbol: string, addresses: Buffer[], creatorAddresses: string[]): Promise<string> => {
+const createNFT = async (name: string, symbol: string, minterSets: MinterSet[], creatorAddresses: string[]): Promise<string> => {
   console.log("Creating NFT Asset...")
-  const minterSet: MinterSet = new MinterSet(1, addresses)
-  const minterSets: MinterSet[] = [minterSet]
   const utxoSet: UTXOSet = await avm.getUTXOs(creatorAddresses)
   const unsignedTx: UnsignedTx = await avm.buildCreateNFTAssetTx(
     utxoSet,
@@ -66,62 +72,91 @@ const createNFT = async (name: string, symbol: string, addresses: Buffer[], crea
 const mintNFT = async (txid: string, addresses: Buffer[], addressStrings: string[], payload:any): Promise<string> => {
   console.log(`Creating NFT Mint Operation #1...`)
   const utxoSet = await avm.getUTXOs(addressStrings)
-  const utxoids = utxoSet.getUTXOIDs()
-  let result: string = ""
+  const utxoids: string[] = _getUTXOID(utxoSet, txid)
+  const utxos: UTXO[] = []
+  utxoids.forEach((utxoid: string) => {
+    const utxo: UTXO = utxoSet.getUTXO(utxoid)
+    utxos.push(utxo)
+  })
 
-  // scan utxos and find the nft one
-  for (let index: number = 0; index < utxoids.length; ++index) {
-    let value = utxoids[index]
-    if (value.substring(0, 10) === txid.substring(0, 10)) {
-      result = value
-      break
+  const zero: BN = new BN(0)
+  const fee: BN = new BN(1000000)
+  const asOf: BN = UnixNow() 
+  const feeAssetID: Buffer = await avm.getAVAXAssetID()
+  let ins: Array<TransferableInput> = []
+  let outs: Array<TransferableOutput> = []
+  
+  if(_feeCheck(fee, feeAssetID)) {
+    const aad: AssetAmountDestination = new AssetAmountDestination(addresses, addresses, addresses)
+    aad.addAssetAmount(feeAssetID, zero, fee)
+    const success: Error = utxoSet.getMinimumSpendable(aad, asOf)
+    if(typeof success === "undefined") {
+      ins = aad.getInputs()
+      outs = aad.getAllOutputs()
+    } else {
+      throw success;
     }
   }
-  console.log("--------------")
-  console.log(result)
+  let ops: TransferableOperation[] = []
 
-  const groupID: number = 0
-  const locktime: BN = new BN(0)
-  const threshold: number = 1
+  utxos.forEach((utxo: UTXO) => {
+    const mintOut: NFTMintOutput = utxo.getOutput() as NFTMintOutput
+    const groupID: number = mintOut.getGroupID()
+    const locktime: BN = new BN(0)
+    const threshold: number = 1
+    if(threshold > addresses.length) {
+        /* istanbul ignore next */
+        throw new Error(`Error - UTXOSet.buildCreateNFTMintTx: threshold is greater than number of addresses`);
+    }
+    let xferOut:NFTTransferOutput = utxo.getOutput() as NFTTransferOutput;
+    let spenders:Array<Buffer> = xferOut.getSpenders(addresses, asOf);
+    let nftMintOperation: NFTMintOperation = new NFTMintOperation(groupID, payload, [new OutputOwners(addresses, locktime, threshold)]);
 
-  const outputOwners:Array<OutputOwners> = []
-  outputOwners.push(new OutputOwners(addresses, locktime, threshold))
+    for(let j:number = 0; j < spenders.length; j++) {
+      let idx:number;
+      idx = xferOut.getAddressIdx(spenders[j]);
+      if(idx == -1){
+        /* istanbul ignore next */
+        throw new Error(`Error - UTXOSet.buildCreateNFTMintTx: no such address in output: ${spenders[j]}`);
+       }
+       nftMintOperation.addSignatureIdx(idx, spenders[j]);
+    }
+        
+    let transferableOperation:TransferableOperation = new TransferableOperation(utxo.getAssetID(), utxoids, nftMintOperation);
+    ops.push(transferableOperation);
+  })
 
-  const unsignedTx = await avm.buildCreateNFTMintTx(
-    utxoSet,
-    addressStrings,
-    addressStrings,
-    result,
-    groupID,
-    payload.toBuffer(),
-    memo
-  )
+  const netid = 12345;
+  const blockchainid: string = Defaults.network[netid].X.blockchainID;
+  const blockchainID:Buffer = bintools.cb58Decode(blockchainid);
+  console.log(blockchainID)
 
-  const tx: Tx = unsignedTx.sign(avm.keyChain())
-  const mintTxid: string = await avm.issueTx(tx)
-  console.log(`NFT Mint Operation Success #1: ${mintTxid}`)
-  return mintTxid
+  let operationTx:OperationTx = new OperationTx(networkID, blockchainID, outs, ins, memo, ops);
+  let unsignedTx:UnsignedTx = new UnsignedTx(operationTx);
+  console.log(unsignedTx)
+  const tx: Tx = unsignedTx.sign(myKeychain)
+  txid = await avm.issueTx(tx)
+  console.log(`NFT Mint Operation Success #1: ${txid}`)
+  return txid
 }
 
 const transferNFT = async (utxoId: string, toAddresses: string[]): Promise<string> => {
-  const fromAddrs: Buffer[] = myKeychain.getAddresses()
   const fromAddrsStr: string[] = myKeychain.getAddressStrings()
   const utxos: UTXOSet = await avm.getUTXOs(fromAddrsStr)
   const utxoids: string[] = utxos.getUTXOIDs()
 
   console.log(`Utxo ids: `,utxoids)
   // let sourceTxId: string = ""
-  let sourceTxId: string = utxoids[0]
+  let sourceTxId: string = utxoids[1]
 
-  for (let index: number = 0; index < utxoids.length; ++index) {
-    let value = utxoids[index]
-    if (value.substring(0, 10) === utxoId.substring(0, 10)) {
-      sourceTxId = value
-      break
-    }
-  }
+  // for (let index: number = 0; index < utxoids.length; ++index) {
+  //   let value = utxoids[index]
+  //   if (value.substring(0, 10) === utxoId.substring(0, 10)) {
+  //     sourceTxId = value
+  //     break
+  //   }
+  // }
 
-  console.log("Source tx: ",sourceTxId);
   const unsignedTx: UnsignedTx = await avm.buildNFTTransferTx(
     utxos,
     toAddresses,
@@ -130,7 +165,6 @@ const transferNFT = async (utxoId: string, toAddresses: string[]): Promise<strin
   )
   const tx: Tx = unsignedTx.sign(avm.keyChain())
   const txid: string = await avm.issueTx(tx)
-  console.log(`NFT Transfer Operation Success: ${txid}`)
   return txid
 }
 
@@ -138,21 +172,41 @@ const transferNFT = async (utxoId: string, toAddresses: string[]): Promise<strin
 const main = async (): Promise<any> => {
   const addresses: Buffer[] = avm.keyChain().getAddresses()
   const addressStrings: string[] = avm.keyChain().getAddressStrings()
-  const name: string = "Avalanche"
-  const symbol: string = "SNOW"
-  let txId = await createNFT(name, symbol, addresses, addressStrings)
+  const name: string = "Coincert"
+  const symbol: string = "TIXX"
+  const minterSet1: MinterSet = new MinterSet(1, addresses)
+  const minterSet2: MinterSet = new MinterSet(1, addresses)
+  const minterSets: MinterSet[] = [minterSet1, minterSet2]
+  let txId = await createNFT(name, symbol, minterSets, addressStrings)
   await sleep(5000)
   // Minting the NFT
   const payload: URLPayload = new URLPayload('https://media.giphy.com/media/ZTjQgJGDiuJZS/source.gif')
   const mintTxId: string = await mintNFT(txId, addresses, addressStrings, payload)
-  await sleep(5000)
-  const nftTo: string[] = ["X-local1tfemk93pgdlc5r3xmawt20nvksjgg7k8q7cd4y"]
-  await transferNFT(mintTxId, nftTo)
+  // await sleep(5000)
+  // const nftTo: string[] = ["X-local1tfemk93pgdlc5r3xmawt20nvksjgg7k8q7cd4y"]
+  // await transferNFT(mintTxId, nftTo)
   // const payload: UTF8Payload = new UTF8Payload(`Test test`)
   // const payload: URLPayload = new URLPayload('https://upload.wikimedia.org/wikipedia/commons/f/f7/Bananas.svg')
   // const payload: URLPayload = new URLPayload('https://cloudflare-ipfs.com/ipfs/QmSRti2HK95NXWYG3t3he7UK7hkgw8w9TdqPc6hi5euV1p/prism/33a.gif')
   // const payload: URLPayload = new URLPayload('https://cloudflare-ipfs.com/ipfs/QmSRti2HK95NXWYG3t3he7UK7hkgw8w9TdqPc6hi5euV1p/sketch/30a.gif')
   // const payload: URLPayload = new URLPayload('https://cloudflare-ipfs.com/ipfs/Qmbxify5MLarmoxTZTCDzSsUY6tRFwt1zbRBeW3gowUNJX/tigerscratch/11b.gif')
+}
+
+const _feeCheck = (fee:BN, feeAssetID:Buffer):boolean => {
+  return (typeof fee !== "undefined" && 
+  typeof feeAssetID !== "undefined" &&
+  fee.gt(new BN(0)) && feeAssetID instanceof Buffer);
+}
+
+const _getUTXOID = (utxoSet: UTXOSet, txid: string): string[] => {
+  const utxoids: string[] = utxoSet.getUTXOIDs()
+    let result: string[] = []
+    for (let index: number = 0; index < utxoids.length; ++index) {
+      if (utxoids[index].indexOf(txid.slice(0,10)) != -1 && utxoSet.getUTXO(utxoids[index]).getOutput().getOutputID() == AVMConstants.NFTMINTOUTPUTID ) {
+          result.push(utxoids[index])
+      }
+    }
+    return result
 }
 
 main()
