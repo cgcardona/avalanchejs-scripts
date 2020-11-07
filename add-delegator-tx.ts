@@ -112,21 +112,19 @@ const main = async (): Promise<any> => {
   memoStr = "Step 3: Add Validator"
   console.log(memoStr)
   const nodeIDs: string[] = [
-    "NodeID-MGrikMRTmooL1j7uawPHjaMS1cXkbewdb", 
-    "NodeID-D3onstuMsGRctDjbksXU6BV3rrCbWHkB9",
-    "NodeID-JRNiPWVdV7Vq7MzBmAQB4jekNTfvRAedj",
-    "NodeID-36giFye5epwBTpGqPk7b4CCYe3hfyoFr1",
-    "NodeID-DueWyGi3B9jtKfa9mPoecd4YSDJ1ftF69",
-    "NodeID-Lai2VTTYk897ae9uq6cGk9FbhKD1KHvFS"
+    "NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5"
+    // "NodeID-D3onstuMsGRctDjbksXU6BV3rrCbWHkB9",
+    // "NodeID-JRNiPWVdV7Vq7MzBmAQB4jekNTfvRAedj",
+    // "NodeID-36giFye5epwBTpGqPk7b4CCYe3hfyoFr1",
+    // "NodeID-DueWyGi3B9jtKfa9mPoecd4YSDJ1ftF69",
+    // "NodeID-Lai2VTTYk897ae9uq6cGk9FbhKD1KHvFS"
   ]
-  const nodeID: string = nodeIDs[3]
+  const nodeID: string = nodeIDs[0]
   let startTime: BN = UnixNow().add(new BN(60))
   // let endTime: BN = startTime.add(new BN(60 * 60 * 24 * 14))
   let endTime: BN = startTime.add(new BN(60))
   const stakeAmounts = await platformvm.getMinStake()
   let stakeAmount: BN = stakeAmounts.minValidatorStake
-  console.log(stakeAmount.toString())
-  const delegationFeeRate: number = new BN(2).toNumber()
   memo = bintools.stringToBuffer(memoStr)
   const rewardLockTime: BN = new BN(0)
   const rewardThreshold: number = 1
@@ -137,12 +135,10 @@ const main = async (): Promise<any> => {
   let dummySet: PlatformVMUTXOSet = new PlatformVMUTXOSet()
 
   utxos.forEach(utxo => {
-    console.log("====")
     const output: Output = utxo.getOutput()
     const o: AmountOutput = utxo.getOutput() as AmountOutput
     const outputID: number = output.getOutputID()
     const a: BN = o.getAmount()
-    console.log(`OutputID: ${outputID} Amount: ${a.toString()}`)
     if(outputID === 7 && dummySet.getAllUTXOs().length === 0 && a.toString() <= stakeAmount.toString()) {
       dummySet.add(utxo)
       
@@ -159,7 +155,7 @@ const main = async (): Promise<any> => {
   })
   // console.log(dummySet.getAllUTXOStrings())
 
-  platformVMUnsignedTx = await platformvm.buildAddValidatorTx(
+  platformVMUnsignedTx = await platformvm.buildCreateSubnetTx(
     dummySet,
     pAddressStrings,
     pAddressStrings,
@@ -169,7 +165,6 @@ const main = async (): Promise<any> => {
     endTime,
     stakeAmount,
     pAddressStrings,
-    delegationFeeRate,
     rewardLockTime,
     rewardThreshold,
     memo

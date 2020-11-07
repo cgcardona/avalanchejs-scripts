@@ -3,6 +3,7 @@ import {
   AVMAPI, 
   KeyChain as AVMKeyChain, 
 } from "avalanche/dist/apis/avm"
+import { HealthAPI } from "avalanche/dist/apis/health"
   
 const ip: string = "localhost"
 const protocol: string = "http"
@@ -19,6 +20,7 @@ const xAddressStrings: string[] = avm.keyChain().getAddressStrings()
 console.log(xAddressStrings)
 const username = "gabr13l"
 const password = "i224rjEezt" 
+const health: HealthAPI = avalanche.Health()
   
 const main = async (): Promise<any> => {
   let avaxAssetID: Buffer = await avm.getAVAXAssetID()
@@ -27,8 +29,11 @@ const main = async (): Promise<any> => {
   let balance: BN = new BN(result.balance)
   let fee: BN = avm.getTxFee()
   let avaxAmount: BN = balance.sub(fee)
-  let txid = await avm.send(username, password, assetID, avaxAmount, xAddressStrings[0], xAddresses, xAddressStrings[0], memo)
-  console.log(txid)
+  let txid: any = await avm.send(username, password, assetID, avaxAmount, xAddressStrings[0], xAddresses, xAddressStrings[0], memo)
+  let status = await avm.getTxStatus(txid.txID)
+  console.log(status)
+  let liveness: any = health.getLiveness()
+  console.log(liveness)
 }
     
 main()

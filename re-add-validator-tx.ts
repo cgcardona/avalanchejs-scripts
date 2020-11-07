@@ -64,7 +64,7 @@ const info: InfoAPI = avalanche.Info()
 const mstimeout: number = 5000
 
 const main = async (): Promise<any> => {
-  let memoStr: string = "Step 1: Export AVAX from X-Chain"
+  let memoStr: string = "Step 1: Export AVAX from the X-Chain"
   console.log(memoStr)
   const avmu: AVMU = await avm.getUTXOs([xAddressStrings[0]])
   const avmUTXOSet: AVMUTXOSet = avmu.utxos 
@@ -119,45 +119,86 @@ const main = async (): Promise<any> => {
     "NodeID-DueWyGi3B9jtKfa9mPoecd4YSDJ1ftF69",
     "NodeID-Lai2VTTYk897ae9uq6cGk9FbhKD1KHvFS"
   ]
-  const nodeID: string = nodeIDs[3]
+  const nodeID: string = nodeIDs[5]
   let startTime: BN = UnixNow().add(new BN(60))
-  // let endTime: BN = startTime.add(new BN(60 * 60 * 24 * 14))
   let endTime: BN = startTime.add(new BN(60))
+//   let endTime: BN = startTime.add(new BN(60 * 60 * 24 * 14))
+  platformvmu = await platformvm.getUTXOs([pAddressStrings[0]])
+  platformVMUTXOSet = platformvmu.utxos 
   const stakeAmounts = await platformvm.getMinStake()
   let stakeAmount: BN = stakeAmounts.minValidatorStake
-  console.log(stakeAmount.toString())
+  // console.log("stake amount")
+  // console.log(stakeAmount.toString())
   const delegationFeeRate: number = new BN(2).toNumber()
+  // // const delegationFeeRate: number = 0.01
   memo = bintools.stringToBuffer(memoStr)
   const rewardLockTime: BN = new BN(0)
   const rewardThreshold: number = 1
+  platformVMUnsignedTx = await platformvm.buildAddValidatorTx(
+    platformVMUTXOSet,
+    pAddressStrings,
+    pAddressStrings,
+    pAddressStrings,
+    nodeID,
+    startTime,
+    endTime,
+    stakeAmount,
+    pAddressStrings,
+    delegationFeeRate,
+    rewardLockTime,
+    rewardThreshold,
+    memo
+  )
+  platformVMTx = platformVMUnsignedTx.sign(platformvm.keyChain())
+  txid = await platformvm.issueTx(platformVMTx)
+  await sleep(mstimeout)
+  status = await platformvm.getTxStatus(txid, true)
+  // console.log(status)
+  console.log(`${status.status}! TXID: ${txid}`)
+  console.log("----------------------------")
+  console.log(`Sleeping for 2 minutes`)
+  await sleep(135000)
+
+  memoStr = "Step 4: Re-Add Validator"
+  console.log(memoStr)
 
   platformvmu = await platformvm.getUTXOs([pAddressStrings[0]])
   platformVMUTXOSet = platformvmu.utxos 
   let utxos: PlatformUTXO[] = platformVMUTXOSet.getAllUTXOs()
   let dummySet: PlatformVMUTXOSet = new PlatformVMUTXOSet()
+  // console.log(platformVMUTXOSet.getAllUTXOStrings())
 
   utxos.forEach(utxo => {
-    console.log("====")
+    // console.log("------")
     const output: Output = utxo.getOutput()
+    // console.log(output)
     const o: AmountOutput = utxo.getOutput() as AmountOutput
     const outputID: number = output.getOutputID()
+    // console.log(outputID)
     const a: BN = o.getAmount()
-    console.log(`OutputID: ${outputID} Amount: ${a.toString()}`)
-    if(outputID === 7 && dummySet.getAllUTXOs().length === 0 && a.toString() <= stakeAmount.toString()) {
+    // console.log(a.toString())
+    if(outputID === 7 && dummySet.getAllUTXOs().length === 0 && a.toString() >= "2000000000000") {
       dummySet.add(utxo)
       
     }
   })
 
   utxos.forEach(utxo => {
+    // console.log("++++++")
     const output: Output = utxo.getOutput()
-    const o: AmountOutput = utxo.getOutput() as AmountOutput
+    // console.log(output)
+    // const o: AmountOutput = utxo.getOutput() as AmountOutput
     const outputID: number = output.getOutputID()
+    // console.log(outputID)
     if(outputID === 22 && dummySet.getAllUTXOs().length === 1) {
       dummySet.add(utxo)
     }
   })
   // console.log(dummySet.getAllUTXOStrings())
+
+  startTime = UnixNow().add(new BN(60))
+  endTime = startTime.add(new BN(60))
+  stakeAmount = new BN(4000000000000)
 
   platformVMUnsignedTx = await platformvm.buildAddValidatorTx(
     dummySet,
@@ -176,13 +217,12 @@ const main = async (): Promise<any> => {
   )
   // let serialized: any = platformVMUnsignedTx.serialize("display")
   // console.log(JSON.stringify(serialized))
-  platformVMTx = platformVMUnsignedTx.sign(platformvm.keyChain())
+  // platformVMTx = platformVMUnsignedTx.sign(platformvm.keyChain())
   // console.log("++++++++++++++")
   // console.log(platformVMTx.toBuffer().toString('hex'))
   txid = await platformvm.issueTx(platformVMTx)
   await sleep(mstimeout)
   status = await platformvm.getTxStatus(txid)
-  // console.log(status)
   console.log(`${status.status}! TXID: ${txid}`)
   console.log("----------------------------")
 }
