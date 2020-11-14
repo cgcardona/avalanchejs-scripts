@@ -1,29 +1,24 @@
 import { 
   Avalanche, 
   BinTools, 
-  BN 
+  BN,
+  Buffer
 } from "avalanche"
 import {
   AVMAPI,
+  AVMConstants,
+  SECPMintOutput,
+  SECPTransferOutput,
   KeyChain,
   Tx,
   UnsignedTx,
-  UTXOSet
+  UTXOSet,
+  UTXO
 } from "avalanche/dist/apis/avm"
-import { Buffer } from 'buffer/'
-
-const sleep = (ms: number): Promise<unknown> => {
-  return new Promise( resolve => setTimeout(resolve, ms) )
-}
-
-interface AVMU {
-  numFetched: number
-  utxos: UTXOSet
-  endIndex: {
-    address: string
-    utxo: string
-  }
-}
+import sleep from '../common/sleep'
+import { AVMU } from '../common/interfaces'
+import { privKey, mstimeout } from '../common/values'
+import getUTXOIDs from '../common/getUTXOIDs'
   
 const ip: string = "localhost"
 const port: number = 9650
@@ -33,29 +28,33 @@ const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const xchain: AVMAPI = avalanche.XChain()
 const bintools: BinTools = BinTools.getInstance()
 const xKeychain: KeyChain = xchain.keyChain()
-const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
 xKeychain.importKey(privKey)
-// const addresses: Buffer[] = xchain.keyChain().getAddresses()
+const addresses: Buffer[] = xchain.keyChain().getAddresses()
 const addressStrings: string[] = xchain.keyChain().getAddressStrings()
-const amount: BN = new BN(5)
-const mstimeout: number = 3000
-const toAaddress: string = "X-local1u90zmd64q33kt50ecl74nt6muag06e3fgwyq4c"
-const assetIDStr: string = "2B6dbhqWybMnALwjXESGeVSkUPYnmeRBg2DpCrtkk5KaD1NqcW"
-const assetIDBuf: Buffer = bintools.cb58Decode(assetIDStr)
   
 const main = async (): Promise<any> => {
   const avmu: AVMU = await xchain.getUTXOs(addressStrings)
   const utxoSet: UTXOSet = avmu.utxos 
-  const assetID: Buffer = await xchain.getAVAXAssetID()
-  const memoStr: string = "AVM Build Base Tx - SECP Asset"
+  const memoStr: string = "AVM Build SECP Mint Tx"
   const memo: Buffer = bintools.stringToBuffer(memoStr)
-  const unsignedTx: UnsignedTx = await xchain.buildBaseTx(
+  const id: string = "2MiFEGVDAHm5dGCMNSmjjX5mFiSj8GRdDBELTW3twkqxzKSrZq"
+
+  const secpMintOutputUTXOIDs: string[] = getUTXOIDs(utxoSet, id, AVMConstants.SECPMINTOUTPUTID, id)
+  const mintUTXOID: string = secpMintOutputUTXOIDs[0]
+  const utxo: UTXO = utxoSet.getUTXO(secpMintOutputUTXOIDs[0])
+  const mintOwner: SECPMintOutput = utxo.getOutput() as SECPMintOutput
+  const amount: BN = new BN(54321)
+  const locktime: BN = new BN(0)
+  const threshold: number = 1
+  const secpTransferOutput: SECPTransferOutput = new SECPTransferOutput(amount, addresses, locktime, threshold)
+
+  const unsignedTx: UnsignedTx = await xchain.buildSECPMintTx(
     utxoSet,
-    amount,
-    assetIDBuf,
-    [toAaddress],
+    mintOwner,
+    secpTransferOutput,
     addressStrings,
     addressStrings,
+    mintUTXOID,
     memo
   )
   const tx: Tx = unsignedTx.sign(xKeychain)

@@ -1,30 +1,23 @@
-import { 
-  Avalanche, 
-  BinTools, 
-  BN 
-} from "avalanche"
 import {
+  Avalanche,
+  BinTools,
+  Buffer,
+  BN
+} from "avalanche"
+import { 
   AVMAPI,
   KeyChain,
   Tx,
   UnsignedTx,
-  UTXOSet
+  UTXOSet,
+  AVMConstants
 } from "avalanche/dist/apis/avm"
-import { Buffer } from 'buffer/'
+import sleep from '../common/sleep'
+import { AVMU } from '../common/interfaces'
+import { privKey, mstimeout } from '../common/values'
+import { OutputOwners } from "avalanche/dist/common"
+import getUTXOIDs from '../common/getUTXOIDs'
 
-const sleep = (ms: number): Promise<unknown> => {
-  return new Promise( resolve => setTimeout(resolve, ms) )
-}
-
-interface AVMU {
-  numFetched: number
-  utxos: UTXOSet
-  endIndex: {
-    address: string
-    utxo: string
-  }
-}
-  
 const ip: string = "localhost"
 const port: number = 9650
 const protocol: string = "http"
@@ -33,30 +26,33 @@ const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const xchain: AVMAPI = avalanche.XChain()
 const bintools: BinTools = BinTools.getInstance()
 const xKeychain: KeyChain = xchain.keyChain()
-const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
 xKeychain.importKey(privKey)
-// const addresses: Buffer[] = xchain.keyChain().getAddresses()
+const addresses: Buffer[] = xchain.keyChain().getAddresses()
 const addressStrings: string[] = xchain.keyChain().getAddressStrings()
-const amount: BN = new BN(54321)
-const mstimeout: number = 3000
-const toAaddress: string = "X-local1u90zmd64q33kt50ecl74nt6muag06e3fgwyq4c"
+const locktime: BN = new BN(0)
+const threshold: number = 1
+const id: string = "2sS6f48ZRQmbiZutfCarVGwBZE7ggdM68LswMfAhXKbQJSB1Pd"
   
 const main = async (): Promise<any> => {
   const avmu: AVMU = await xchain.getUTXOs(addressStrings)
   const utxoSet: UTXOSet = avmu.utxos 
-  const assetID: Buffer = await xchain.getAVAXAssetID()
-  const memoStr: string = "AVM Build Base Tx - AVAX"
+  const memoStr: string = "AVM Build Create NFT Mint Tx"
   const memo: Buffer = bintools.stringToBuffer(memoStr)
-  const unsignedTx: UnsignedTx = await xchain.buildBaseTx(
+  const outputOwners: OutputOwners = new OutputOwners(addresses, locktime, threshold)
+  const groupID: number = 0
+  const nftMintOutputUTXOIDs: string[] = getUTXOIDs(utxoSet, id, AVMConstants.NFTMINTOUTPUTID, id)
+  console.log(nftMintOutputUTXOIDs)
+  const unsignedTx: UnsignedTx = await xchain.buildCreateNFTMintTx(
     utxoSet,
-    amount,
-    assetID,
-    [toAaddress],
+    outputOwners,
     addressStrings,
     addressStrings,
+    nftMintOutputUTXOIDs[0],
+    groupID,
+    memo,
     memo
   )
-  const tx: Tx = unsignedTx.sign(xKeychain)
+  const tx: Tx =  unsignedTx.sign(xKeychain)
   const txid: string = await xchain.issueTx(tx)
   await sleep(mstimeout)
   const status : string = await xchain.getTxStatus(txid)
