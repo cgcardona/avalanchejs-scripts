@@ -32,7 +32,7 @@ const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const bintools: BinTools = BinTools.getInstance()
 const cvm: ContractVMAPI = avalanche.CChain()
 const cKeychain: KeyChain = cvm.keyChain()
-const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
+const privKey: string = "PrivateKey-"
 cKeychain.importKey(privKey)
 console.log(cvm)
 const cAddressStrings: string[] = cKeychain.getAddressStrings()
@@ -41,7 +41,7 @@ console.log(cAddressStrings)
 // const platformvm: PlatformVMAPI= avalanche.PChain()
 // const xKeychain: AVMKeyChain = avm.keyChain()
 // const pKeychain: PlatformVMKeyChain = platformvm.keyChain()
-// const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
+// const privKey: string = "PrivateKey-"
 // xKeychain.importKey(privKey)
 // pKeychain.importKey(privKey)
 // const xAddressStrings: string[] = avm.keyChain().getAddressStrings()

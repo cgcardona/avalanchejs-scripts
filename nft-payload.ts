@@ -57,7 +57,7 @@ const avm: AVMAPI = avalanche.XChain()
 const platformvm: PlatformVMAPI= avalanche.PChain()
 const xKeychain: AVMKeyChain = avm.keyChain()
 const pKeychain: PlatformVMKeyChain = platformvm.keyChain()
-const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
+const privKey: string = "PrivateKey-"
 xKeychain.importKey(privKey)
 pKeychain.importKey(privKey)
 const xAddressStrings: string[] = avm.keyChain().getAddressStrings()

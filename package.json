@@ -12,7 +12,7 @@
     "@types/create-hash": "^1.2.2",
     "@types/elliptic": "^6.4.12",
     "@types/hdkey": "^0.7.1",
-    "avalanche": "^2.4.2",
+    "avalanche": "^3.0.5",
     "axios": "^0.19.2",
     "bip39": "^3.0.2",
     "bn.js": "4.11.8",

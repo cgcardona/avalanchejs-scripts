@@ -14,7 +14,7 @@ const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const cchain: EVMAPI = avalanche.CChain()
   
 const main = async (): Promise<any> => {
-  const privKey: string = await cchain.exportKey("gabr13l", "i224rjEezt", "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC")
+  const privKey: string = await cchain.exportKey("", "", "")
   console.log(privKey)
 }
   

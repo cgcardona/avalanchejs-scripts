@@ -25,7 +25,54 @@ const bintools: BinTools = BinTools.getInstance()
 const xKeychain: KeyChain = xchain.keyChain()
 xKeychain.importKey(privKey)
 const addressStrings: string[] = xchain.keyChain().getAddressStrings()
+
 const amount: BN = new BN(54321)
+
+
+codec id: 00 00 
+type id: 00 00 00 00 
+network id: 00 00 30 39 
+blockchain id: d8 91 ad 56 05 6d 9c 01 f1 8f 43 f5 8b 5c 78 4a d0 7a 4a 49 cf 3d 1f 11 62 38 04 b5 cb a2 c6 bf 
+
+num xfer outputs: 00 00 00 02 
+
+xfer output[0]:
+
+asset id: db cf 89 0f 77 f4 9b 96 85 76 48 b7 2b 77 f9 f8 29 37 f2 8a 68 70 4a f0 5d a0 dc 12 ba 53 f2 db 
+type id: 00 00 00 07 
+amount: 00 00 00 00 00 00 d4 31 
+locktime: 00 00 00 00 00 00 00 00 
+threshold: 00 00 00 01 
+num addresses: 00 00 00 01 
+addr[0]: e1 5e 2d b7 55 04 63 65 d1 f9 c7 fd 59 af 5b e7 50 fd 66 29 
+
+db cf 89 0f 77 f4 9b 96 85 76 48 b7 2b 77 f9 f8 29 37 f2 8a 68 70 4a f0 5d a0 dc 12 ba 53 f2 db 
+00 00 00 07 
+04 29 d0 69 18 8d e9 8f 
+00 00 00 00 00 00 00 00 
+00 00 00 01 
+00 00 00 01 
+3c b7 d3 84 2e 8c ee 6a 0e bd 09 f1 fe 88 4f 68 61 e1 b2 9c 
+
+num xfer inputs: 00 00 00 01 
+txid: db cf 89 0f 77 f4 9b 96 85 76 48 b7 2b 77 f9 f8 29 37 f2 8a 68 70 4a f0 5d a0 dc 12 ba 53 f2 db
+utxo index: 00 00 00 01 
+asset id: db cf 89 0f 77 f4 9b 96 85 76 48 b7 2b 77 f9 f8 29 37 f2 8a 68 70 4a f0 5d a0 dc 12 ba 53 f2 db 
+type id: 00 00 00 05 
+amount: 04 29 d0 69 18 9e 00 00 
+address indices: 00 00 00 01 
+00 00 00 00 
+
+00 00 00 04 
+00 00 00 00 
+
+num creds: 00 00 00 01 
+cred[0]:
+type id: 00 00 00 09 
+num sigs: 00 00 00 01 
+sigs[0]: 99 e2 96 25 df 35 8f a9 f8 85 1d 01 8e 8a 28 59 26 3d 76 31 4d a1 68 cb 04 80 f0 67 75 e5 86 30 0c 14 c1 95 85 b7 ca 7a e6 d0 c6 43 dd ea 5f 2d 3d 72 ae 98 37 fd d4 d2 20 5f 83 11 43 39 f6 2a 01
+
+
   
 const main = async (): Promise<any> => {
   const avmu: AVMU = await xchain.getUTXOs(addressStrings)
