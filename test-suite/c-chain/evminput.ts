@@ -1,5 +1,5 @@
 import { 
-  Avalanche
+  Avalanche, BN
 } from "avalanche"
 import {
   EVMInput,
@@ -14,8 +14,9 @@ const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 // const xchain: AVMAPI = avalanche.XChain()
   
 const main = async (): Promise<any> => {
-  // const txid: any = await xchain.import("gabr13l", "i224rjEezt", "X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u", "C")
-  // console.log(txid)
+  const address: string = "X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u"
+  const amount: BN = new BN(1000000000)
+  const assetid: string = "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK"
   const evmInput: EVMInput = new EVMInput()
   console.log(evmInput)
   console.log(evmInput.toBuffer().toString('hex'))

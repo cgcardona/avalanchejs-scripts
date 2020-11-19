@@ -1,26 +1,16 @@
 import { 
-  Avalanche, 
   BinTools, 
   BN, 
-  Buffer,
-  evm
+  Buffer
 } from "avalanche"
 import {
   EVMOutput,
-  EVMAPI,
   SelectOutputClass
 } from "avalanche/dist/apis/evm"
-import { getPreferredHRP } from "avalanche/dist/utils"
 
 const bintools: BinTools = BinTools.getInstance()
-const ip: string = "localhost"
-const port: number = 9650
-const protocol: string = "http"
-const networkID: number = 12345
   
 const main = async (): Promise<any> => {
-  const hrp: string = getPreferredHRP(networkID)
-  const blockchainID: string = "X" 
   let address: string = "X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u"
   let amount: BN = new BN(1000000000)
   const assetid: string = "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK"
@@ -32,8 +22,7 @@ const main = async (): Promise<any> => {
   amount = evmOutput1.getAmount()
   console.log(`amount: ${amount.toString()}`)
   let addyBuffer: Buffer = evmOutput1.getAddress()
-  address = bintools.addressToString(hrp, blockchainID, addyBuffer)
-  console.log(`address: ${address}`)
+  console.log(`address: ${bintools.cb58Encode(addyBuffer)}`)
   let assetIDBuffer: Buffer = evmOutput1.getAssetID()
   console.log(`assetid: ${bintools.cb58Encode(assetIDBuffer)}`)
   console.log(evmOutput1.toString())
@@ -46,8 +35,7 @@ const main = async (): Promise<any> => {
   console.log(evmOutput2)
   console.log(evmOutput2.toBuffer().toString('hex'))
   addyBuffer = evmOutput2.getAddress()
-  address = bintools.addressToString(hrp, blockchainID, addyBuffer)
-  console.log(`address: ${address}`)
+  console.log(`address: ${bintools.cb58Encode(addyBuffer)}`)
 
   amount = evmOutput2.getAmount()
   console.log(`amount: ${amount.toString()}`)
@@ -63,11 +51,22 @@ const main = async (): Promise<any> => {
   console.log(evmOutput3)
   console.log(evmOutput3.toBuffer().toString('hex'))
   addyBuffer = evmOutput3.getAddress()
-  address = bintools.addressToString(hrp, blockchainID, addyBuffer)
-  console.log(`address: ${address}`)
+  console.log(`address: ${bintools.cb58Encode(addyBuffer)}`)
 
+  // TODO - Why is this amount 0? It should be 1 AVAX.
+  // It looks like address, amount and assetid were properly cloned. But the amount getter is returning 0.
+  // The address and asset id 
+  // EVMOutput {
+  //   address: <Buffer 3c b7 d3 84 2e 8c ee 6a 0e bd 09 f1 fe 88 4f 68 61 e1 b2 9c>,
+  //   amount: <Buffer 00 00 00 00 3b 9a ca 00>,
+  //   amountValue: BN { negative: 0, words: [ 0 ], length: 1, red: null },
+  //   assetid: <Buffer 3d 9b da c0 ed 1d 76 13 30 cf 68 0e fd eb 1a 42 15 9e b3 87 d6 d2 95 0c 96 f7 d2 8f 61 bb e2 aa>,
+  //   getAddress: [Function],
+  //   getAmount: [Function],
+  //   getAssetID: [Function]
+  // }
   amount = evmOutput3.getAmount()
-  console.log(`amount: ${amount.toString()}`)
+  console.log(`aamount: ${amount.toString()}`)
 
   assetIDBuffer = evmOutput3.getAssetID()
   console.log(`assetid: ${bintools.cb58Encode(assetIDBuffer)}`)
@@ -80,8 +79,7 @@ const main = async (): Promise<any> => {
   console.log(evmOutput4)
   console.log(evmOutput4.toBuffer().toString('hex'))
   addyBuffer = evmOutput4.getAddress()
-  address = bintools.addressToString(hrp, blockchainID, addyBuffer)
-  console.log(`address: ${address}`)
+  console.log(`address: ${bintools.cb58Encode(addyBuffer)}`)
 
   amount = evmOutput4.getAmount()
   console.log(`amount: ${amount.toString()}`)
