@@ -49,7 +49,7 @@ const sleep = (ms: number): Promise<unknown> => {
 }
 
 // Create NFTs from the faucet private key (local)
-myKeychain.importKey("PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN")
+myKeychain.importKey("PrivateKey-")
 
 const createNFT = async (name: string, symbol: string, minterSets: MinterSet[], creatorAddresses: string[]): Promise<string> => {
   console.log("Creating NFT Asset...")

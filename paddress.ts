@@ -13,7 +13,7 @@ const port: number = 9650
 const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const platformvm: PlatformVMAPI= avalanche.PChain()
 const pKeychain: PlatformVMKeyChain = platformvm.keyChain()
-pKeychain.importKey("PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN")
+pKeychain.importKey("PrivateKey-")
 const pAddressStrings: string[] = platformvm.keyChain().getAddressStrings()
 console.log(pAddressStrings)
 

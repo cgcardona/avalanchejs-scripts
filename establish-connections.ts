@@ -17,7 +17,7 @@ const bintools: BinTools = BinTools.getInstance()
 const avm: AVMAPI = avalanche.XChain()
 const xKeychain: AVMKeyChain = avm.keyChain()
 const memo: string = "Through consensus to the stars"
-xKeychain.importKey("PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN")
+xKeychain.importKey("PrivateKey-")
 const xAddresses: Buffer[] = avm.keyChain().getAddresses()
 const xAddressStrings: string[] = avm.keyChain().getAddressStrings()
 console.log(xAddressStrings)
