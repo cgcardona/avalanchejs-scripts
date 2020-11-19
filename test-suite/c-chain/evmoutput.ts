@@ -66,7 +66,7 @@ const main = async (): Promise<any> => {
   //   getAssetID: [Function]
   // }
   amount = evmOutput3.getAmount()
-  console.log(`aamount: ${amount.toString()}`)
+  console.log(`amount: ${amount.toString()}`)
 
   assetIDBuffer = evmOutput3.getAssetID()
   console.log(`assetid: ${bintools.cb58Encode(assetIDBuffer)}`)
@@ -75,7 +75,7 @@ const main = async (): Promise<any> => {
 
   console.log("---------------------------------------------------------------")
   console.log("create")
-  const evmOutput4: EVMOutput = evmOutput2.create()
+  const evmOutput4: EVMOutput = evmOutput3.create()
   console.log(evmOutput4)
   console.log(evmOutput4.toBuffer().toString('hex'))
   addyBuffer = evmOutput4.getAddress()
