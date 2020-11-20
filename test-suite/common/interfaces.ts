@@ -6,9 +6,9 @@ import {
   UTXOSet as PlatformVMUTXOSet
 } from "avalanche/dist/apis/platformvm"
 
-import {
-  UTXOSet as EVMUTXOSet
-} from "avalanche/dist/apis/evm"
+// import {
+//   UTXOSet as EVMUTXOSet
+// } from "avalanche/dist/apis/evm"
 
 export interface EndIndex {
   address: string,
@@ -31,6 +31,6 @@ export interface PlatformVMU extends VMU {
 
 export interface EVMU {
   numFetched: number;
-  utxos: EVMUTXOSet;
+  // utxos: EVMUTXOSet;
   endIndex: EndIndex
 }
