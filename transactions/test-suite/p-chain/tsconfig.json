@@ -11,8 +11,7 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "baseUrl": "./",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "include": ["*"],
   "exclude": ["node_modules"]
