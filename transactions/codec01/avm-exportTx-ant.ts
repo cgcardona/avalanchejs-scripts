@@ -18,7 +18,7 @@ import {
   UnsignedTx,
   Tx
 } from "avalanche/dist/apis/avm"
-import { iGetBalanceResponse } from "avalanche/dist/apis/avm/interfaces"
+import { iAVMUTXOResponse } from "avalanche/dist/apis/avm/interfaces"
 import { Defaults } from "avalanche/dist/utils"
     
 const ip: string = "localhost"
@@ -42,30 +42,36 @@ const inputs: TransferableInput[] = []
 const fee: BN = xchain.getDefaultTxFee()
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("Manually Export AVAX from X-Chain to C-Chain")
+const memo: Buffer = bintools.stringToBuffer("Manually Export AVAX and ANT from X-Chain to C-Chain")
     
 const main = async (): Promise<any> => {
   const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
-  const getBalanceResponse: iGetBalanceResponse = await xchain.getBalance(xAddressStrings[0], bintools.cb58Encode(avaxAssetID))
-  const balance: BN = new BN(getBalanceResponse.balance)
-  const secpTransferOutput: SECPTransferOutput = new SECPTransferOutput(balance.sub(fee), xAddresses, locktime, threshold)
-  const transferableOutput: TransferableOutput = new TransferableOutput(avaxAssetID, secpTransferOutput)
-  exportedOuts.push(transferableOutput)
-
-  const u: any = await xchain.getUTXOs(xAddressStrings)
-  const utxoSet: UTXOSet = u.utxos
+  const avmUTXOResponse: iAVMUTXOResponse = await xchain.getUTXOs(xAddressStrings)
+  const utxoSet: UTXOSet = avmUTXOResponse.utxos
   const utxos: UTXO[] = utxoSet.getAllUTXOs()
   utxos.forEach((utxo: UTXO) => {
-    const amountOutput: AmountOutput = utxo.getOutput() as AmountOutput
-    const amt: BN = amountOutput.getAmount().clone()
-    const txid: Buffer = utxo.getTxID()
-    const outputidx: Buffer = utxo.getOutputIdx()
+    if(utxo.getOutput().getTypeID() != 6) {
+      const amountOutput: AmountOutput = utxo.getOutput() as AmountOutput
+      let amt: BN = amountOutput.getAmount().clone()
+      const txid: Buffer = utxo.getTxID()
+      let assetID: Buffer = utxo.getAssetID()
+      const outputidx: Buffer = utxo.getOutputIdx()
+      let secpTransferOutput: SECPTransferOutput = new SECPTransferOutput()
+      if(avaxAssetID.toString("hex") === assetID.toString("hex")) {
+        assetID = avaxAssetID
+        secpTransferOutput = new SECPTransferOutput(amt.sub(fee), xAddresses, locktime, threshold)
+      } else {
+        secpTransferOutput = new SECPTransferOutput(amt, xAddresses, locktime, threshold)
+      }
+      const transferableOutput: TransferableOutput = new TransferableOutput(assetID, secpTransferOutput)
+      exportedOuts.push(transferableOutput)
 
-    const secpTransferInput: SECPTransferInput = new SECPTransferInput(amt)
-    secpTransferInput.addSignatureIdx(0, xAddresses[0])
+      const secpTransferInput: SECPTransferInput = new SECPTransferInput(amt)
+      secpTransferInput.addSignatureIdx(0, xAddresses[0])
 
-    const input: TransferableInput = new TransferableInput(txid, outputidx, avaxAssetID, secpTransferInput)
-    inputs.push(input)
+      const input: TransferableInput = new TransferableInput(txid, outputidx, assetID, secpTransferInput)
+      inputs.push(input)
+    }
   })
 
   const exportTx: ExportTx = new ExportTx(
