@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "author": "Gabriel Cardona gabriel.cardona@ava-labs.org",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "ts-node": "ts-node"

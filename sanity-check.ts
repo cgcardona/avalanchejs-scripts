@@ -1,34 +1,28 @@
+import { 
+  Avalanche, 
+  Buffer 
+} from "avalanche"
+import { 
+  KeyChain, 
+  AVMAPI, 
+  UTXO
+} from "avalanche/dist/apis/avm"
+
+const networkID: number = 12345
+const ip: string = 'localhost'
+const port: number = 9650
+const protocol: string = 'http'
+const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
+const xchain: AVMAPI = avalanche.XChain()
+const xKeychain: KeyChain = xchain.keyChain()
+const senderPrivateKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
+xKeychain.importKey(senderPrivateKey)
+
 const main = async (): Promise<any> => {
-  let f = '0x123'
-  let strFirstTwo = f.substring(0,2);
-  // console.log(strFirstTwo)
-
-  // console.log(str); //shows '012123'
-  // console.log(strFirstThree); // shows '012'
-  if(strFirstTwo === '0x') {
-    console.log('f split')
-  }
-
-  let g = '321'
-  strFirstTwo = g.substring(0,2);
-  // console.log(strFirstTwo)
-  if(strFirstTwo === '0x') {
-    console.log('g split')
-  }
-  // console.log(g.split('x'))
-  // if(g.split('x')) {
-  //   console.log('g split')
-  // }
-
-  // const memoStr: string = "Sanity Check"
-  // console.log(memoStr)
-  // console.log("------")
-  // let words: string[] = ["all", "the", "things"]
-  // words.forEach((word: string , index: number) => {
-  //   console.log(word)
-  //   console.log(index)
-  //   console.log("------")
-  // })
+  const utxoStr: string = "128xD6CUwiLq7F7bjaUq2PJpV9cUV5YGNLn5eAgcRbYtUhkojxF8N2gVTDcXnH83afrq2W14GnJjDAWzP6i7yVUcAfE3gdtaVTemtia17Cp6hznekfApoxy7NB3z9msyEA7WDzwRsfoPRfd5GrJLV5eDyucyBnkwaUDMgn"
+  const utxo: UTXO = new UTXO()
+  utxo.fromString(utxoStr)
+  console.log(utxo)
 }
   
 main()
