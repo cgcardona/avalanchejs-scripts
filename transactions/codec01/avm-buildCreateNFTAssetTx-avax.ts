@@ -9,10 +9,10 @@ import {
   KeyChain as AVMKeyChain,
   UTXOSet,
   UnsignedTx,
-  Tx
+  Tx,
+  MinterSet
 } from "avalanche/dist/apis/avm"
 import { 
-  iGetBalanceResponse, 
   iAVMUTXOResponse 
 } from "avalanche/dist/apis/avm/interfaces"
 import { UnixNow } from "avalanche/dist/utils"
@@ -27,31 +27,29 @@ const bintools: BinTools = BinTools.getInstance()
 const xKeychain: AVMKeyChain = xchain.keyChain()
 const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
 xKeychain.importKey(privKey)
+const xAddresses: Buffer[] = xchain.keyChain().getAddresses()
 const xAddressStrings: string[] = xchain.keyChain().getAddressStrings()
-const asOf: BN = UnixNow()
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("AVM utility method buildBaseTx to send AVAX")
-const fee: BN = xchain.getDefaultTxFee()
+const asOf: BN = UnixNow()
+const memo: Buffer = bintools.stringToBuffer("AVM utility method buildCreateNFTAssetTx to create an NFT")
+const name: string = "non fungible token" 
+const symbol: string = "NFT" 
     
 const main = async (): Promise<any> => {
-  const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
-  const getBalanceResponse: iGetBalanceResponse = await xchain.getBalance(xAddressStrings[0], bintools.cb58Encode(avaxAssetID))
-  const balance: BN = new BN(getBalanceResponse.balance)
   const avmUTXOResponse: iAVMUTXOResponse = await xchain.getUTXOs(xAddressStrings)
   const utxoSet: UTXOSet = avmUTXOResponse.utxos
-
-  const unsignedTx: UnsignedTx = await xchain.buildBaseTx(
+  const minterSets: MinterSet[] = [new MinterSet(threshold, xAddresses)]
+  const unsignedTx: UnsignedTx = await xchain.buildCreateNFTAssetTx(
     utxoSet,
-    balance.sub(fee),
-    avaxAssetID,
     xAddressStrings,
     xAddressStrings,
-    xAddressStrings,
+    minterSets,
+    name,
+    symbol,
     memo,
     asOf,
-    locktime,
-    threshold
+    locktime
   )
   const tx: Tx = unsignedTx.sign(xKeychain)
   const id: string = await xchain.issueTx(tx)

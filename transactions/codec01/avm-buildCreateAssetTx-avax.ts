@@ -9,17 +9,18 @@ import {
   KeyChain as AVMKeyChain,
   SECPTransferOutput,
   SECPTransferInput,
-  TransferableOutput,
   TransferableInput,
   UTXOSet,
   UTXO,
   AmountOutput,
   UnsignedTx,
   Tx,
-  CreateAssetTx,
   InitialStates,
   SECPMintOutput
 } from "avalanche/dist/apis/avm"
+import { 
+  iAVMUTXOResponse 
+} from "avalanche/dist/apis/avm/interfaces"
     
 const ip: string = "localhost"
 const port: number = 9650
@@ -33,20 +34,19 @@ const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUr
 xKeychain.importKey(privKey)
 const xAddresses: Buffer[] = xchain.keyChain().getAddresses()
 const xAddressStrings: string[] = xchain.keyChain().getAddressStrings()
-const avaxAssetID: string = "2fombhL7aGPwj3KH4bfrmJwW6PVnMobf9Y2fn9GwxiAAJyFDbe"
 const outputs: SECPMintOutput[] = []
 const inputs: TransferableInput[] = []
-const fee: BN = new BN(1000000)
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("AVM buildCreateAssetTx")
+const memo: Buffer = bintools.stringToBuffer("AVM utility method buildCreateAssetTx to create an ANT")
 const name: string = "TestToken"
 const symbol: string = "TEST"
 const denomination: number = 3
     
 const main = async (): Promise<any> => {
-  const u: any = await xchain.getUTXOs(xAddressStrings)
-  const utxoSet: UTXOSet = u.utxos
+  const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
+  const avmUTXOResponse: iAVMUTXOResponse = await xchain.getUTXOs(xAddressStrings)
+  const utxoSet: UTXOSet = avmUTXOResponse.utxos
   const utxos: UTXO[] = utxoSet.getAllUTXOs()
   utxos.forEach((utxo: UTXO) => {
     const amountOutput: AmountOutput = utxo.getOutput() as AmountOutput
@@ -57,7 +57,7 @@ const main = async (): Promise<any> => {
     const secpTransferInput: SECPTransferInput = new SECPTransferInput(amt)
     secpTransferInput.addSignatureIdx(0, xAddresses[0])
 
-    const input: TransferableInput = new TransferableInput(txid, outputidx, bintools.cb58Decode(avaxAssetID), secpTransferInput)
+    const input: TransferableInput = new TransferableInput(txid, outputidx, avaxAssetID, secpTransferInput)
     inputs.push(input)
   })
 

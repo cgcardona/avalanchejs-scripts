@@ -16,7 +16,11 @@ import {
   AmountOutput,
   UnsignedTx,
   Tx,
-  BaseTx
+  CreateAssetTx,
+  InitialStates,
+  MinterSet,
+  AVMConstants,
+  NFTMintOutput
 } from "avalanche/dist/apis/avm"
 import { 
   iGetBalanceResponse, 
@@ -42,7 +46,11 @@ const inputs: TransferableInput[] = []
 const fee: BN = xchain.getDefaultTxFee()
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("AVM manual BaseTx to send AVAX")
+const memo: Buffer = bintools.stringToBuffer("AVM manual CreateAssetTx to create an NFT")
+const name: string = "non fungible token" 
+const symbol: string = "NFT" 
+const denomination: number = 0 // NFTs are non-fungible
+const groupID: number = 0
     
 const main = async (): Promise<any> => {
   const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
@@ -68,14 +76,28 @@ const main = async (): Promise<any> => {
     inputs.push(input)
   })
 
-  const baseTx: BaseTx = new BaseTx (
+  const initialStates: InitialStates = new InitialStates()
+  const minterSets: MinterSet[] = [new MinterSet(threshold, xAddresses)]
+  const nftMintOutput: NFTMintOutput = new NFTMintOutput(
+    groupID,
+    minterSets[0].getMinters(),
+    locktime, 
+    minterSets[0].getThreshold()
+  )
+  initialStates.addOutput(nftMintOutput, AVMConstants.NFTFXID)
+
+  const createAssetTx: CreateAssetTx = new CreateAssetTx(
     networkID,
     bintools.cb58Decode(blockchainid),
     outputs,
     inputs,
-    memo
+    memo,
+    name,
+    symbol,
+    denomination,
+    initialStates
   )
-  const unsignedTx: UnsignedTx = new UnsignedTx(baseTx)
+  const unsignedTx: UnsignedTx = new UnsignedTx(createAssetTx)
   const tx: Tx = unsignedTx.sign(xKeychain)
   const id: string = await xchain.issueTx(tx)
   console.log(id)
