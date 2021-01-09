@@ -73,7 +73,7 @@ const main = async (): Promise<any> => {
     outputs.push(transferableOutput)
   })
 
-  const exportTx: ImportTx = new ImportTx(
+  const importTx: ImportTx = new ImportTx(
     networkID,
     bintools.cb58Decode(blockchainid),
     outputs,
@@ -82,7 +82,7 @@ const main = async (): Promise<any> => {
     bintools.cb58Decode(cChainBlockchainID),
     importedInputs
   )
-  const unsignedTx: UnsignedTx = new UnsignedTx(exportTx)
+  const unsignedTx: UnsignedTx = new UnsignedTx(importTx)
 
   // start uncomment for codecID 00 00
   // const tx: Tx = unsignedTx.sign(xKeychain)
