@@ -6,7 +6,7 @@ import {
 } from "avalanche"
 import {
   AVMAPI, 
-  KeyChain as AVMKeyChain,
+  KeyChain,
   UTXOSet,
   UnsignedTx,
   Tx
@@ -21,7 +21,7 @@ const networkID: number = 12345
 const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const xchain: AVMAPI = avalanche.XChain()
 const bintools: BinTools = BinTools.getInstance()
-const xKeychain: AVMKeyChain = xchain.keyChain()
+const xKeychain: KeyChain = xchain.keyChain()
 const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
 xKeychain.importKey(privKey)
 const xAddressStrings: string[] = xchain.keyChain().getAddressStrings()
@@ -30,7 +30,7 @@ const cChainBlockchainID: string = "2Z9cLs2fVMZ5xjBQ8epCqxrVtHMeS1Hp2SXQrv85be7b
 const threshold: number = 1
 const locktime: BN = new BN(0)
 const asOf: BN = UnixNow()
-const memo: Buffer = bintools.stringToBuffer("Import to X-Chain the C-Chain")
+const memo: Buffer = bintools.stringToBuffer("AVM utility method buildImportTx to import AVAX to the X-Chain from the C-Chain or the P-Chain")
       
 const main = async (): Promise<any> => {
   const avmUTXOResponse: iAVMUTXOResponse = await xchain.getUTXOs(xAddressStrings, cChainBlockchainID)

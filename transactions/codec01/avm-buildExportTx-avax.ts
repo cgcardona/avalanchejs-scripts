@@ -30,7 +30,7 @@ const cChainBlockchainID: string = "2Z9cLs2fVMZ5xjBQ8epCqxrVtHMeS1Hp2SXQrv85be7b
 const threshold: number = 1
 const locktime: BN = new BN(0)
 const asOf: BN = UnixNow()
-const memo: Buffer = bintools.stringToBuffer("AVM utility method buildExportTx to AVAX to the C-Chain or P-Chain")
+const memo: Buffer = bintools.stringToBuffer("AVM utility method buildExportTx to export AVAX to the C-Chain or P-Chain from the X-Chain")
 const fee: BN = xchain.getDefaultTxFee()
       
 const main = async (): Promise<any> => {
