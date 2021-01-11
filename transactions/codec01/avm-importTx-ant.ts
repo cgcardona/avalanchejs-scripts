@@ -34,8 +34,7 @@ xKeychain.importKey(privKey)
 const xAddresses: Buffer[] = xchain.keyChain().getAddresses()
 const xAddressStrings: string[] = xchain.keyChain().getAddressStrings()
 const blockchainid: string = Defaults.network['12345'].X.blockchainID
-//   const cChainBlockchainID: string = Defaults.network['12345'].C.blockchainID
-const cChainBlockchainID: string = "2Z9cLs2fVMZ5xjBQ8epCqxrVtHMeS1Hp2SXQrv85be7b5KmeQd"
+const cChainBlockchainID: string = Defaults.network['12345'].C.blockchainID
 const importedInputs: TransferableInput[] = []
 const outputs: TransferableOutput[] = []
 const inputs: TransferableInput[] = []

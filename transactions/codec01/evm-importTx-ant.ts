@@ -51,15 +51,13 @@ const main = async (): Promise<any> => {
     const outputidx: Buffer = utxo.getOutputIdx()
     const output: AmountOutput = utxo.getOutput() as AmountOutput
     const amt: BN = output.getAmount().clone()
-    if(avaxAsetID.toString("hex") === assetID.toString("hex")) {
-      const input: SECPTransferInput = new SECPTransferInput(amt)
-      input.addSignatureIdx(0, cAddresses[0])
-      const xferin: TransferableInput = new TransferableInput(txid, outputidx, assetID, input)
-      importedIns.push(xferin)
+    const input: SECPTransferInput = new SECPTransferInput(amt)
+    input.addSignatureIdx(0, cAddresses[0])
+    const xferin: TransferableInput = new TransferableInput(txid, outputidx, assetID, input)
+    importedIns.push(xferin)
 
-      const evmOutput: EVMOutput = new EVMOutput(cHexAddress, amt, assetID)
-      evmOutputs.push(evmOutput)
-    }
+    const evmOutput: EVMOutput = new EVMOutput(cHexAddress, amt, assetID)
+    evmOutputs.push(evmOutput)
   })
     
   const importTx: ImportTx = new ImportTx(

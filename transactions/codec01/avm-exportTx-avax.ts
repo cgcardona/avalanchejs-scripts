@@ -18,11 +18,7 @@ import {
   UnsignedTx,
   Tx
 } from "avalanche/dist/apis/avm"
-import {
-  EVMAPI, 
-  KeyChain as EVMKeyChain,
-} from "avalanche/dist/apis/evm"
-import { iGetBalanceResponse } from "avalanche/dist/apis/avm/interfaces"
+import { iAVMUTXOResponse, iGetBalanceResponse } from "avalanche/dist/apis/avm/interfaces"
 import { Defaults } from "avalanche/dist/utils"
     
 const ip: string = "localhost"
@@ -31,27 +27,21 @@ const protocol: string = "http"
 const networkID: number = 12345
 const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const xchain: AVMAPI = avalanche.XChain()
-const cchain: EVMAPI = avalanche.CChain()
 const bintools: BinTools = BinTools.getInstance()
 const xKeychain: AVMKeyChain = xchain.keyChain()
-const cKeychain: EVMKeyChain = cchain.keyChain()
 const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
 xKeychain.importKey(privKey)
-cKeychain.importKey(privKey)
 const xAddresses: Buffer[] = xchain.keyChain().getAddresses()
 const xAddressStrings: string[] = xchain.keyChain().getAddressStrings()
-const cAddresses: Buffer[] = cchain.keyChain().getAddresses()
-const cAddressStrings: string[] = cchain.keyChain().getAddressStrings()
 const blockchainid: string = Defaults.network['12345'].X.blockchainID
-//   const cChainBlockchainID: string = Defaults.network['12345'].C.blockchainID
-const cChainBlockchainID: string = "2Z9cLs2fVMZ5xjBQ8epCqxrVtHMeS1Hp2SXQrv85be7b5KmeQd"
+const pChainBlockchainID: string = Defaults.network['12345'].P.blockchainID
 const exportedOuts: TransferableOutput[] = []
 const outputs: TransferableOutput[] = []
 const inputs: TransferableInput[] = []
 const fee: BN = xchain.getDefaultTxFee()
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("Manually Export AVAX from X-Chain to C-Chain")
+const memo: Buffer = bintools.stringToBuffer("Manually Export AVAX from X-Chain to C-Chain or the P-Chain")
     
 const main = async (): Promise<any> => {
   const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
@@ -61,8 +51,8 @@ const main = async (): Promise<any> => {
   const transferableOutput: TransferableOutput = new TransferableOutput(avaxAssetID, secpTransferOutput)
   exportedOuts.push(transferableOutput)
 
-  const u: any = await xchain.getUTXOs(xAddressStrings)
-  const utxoSet: UTXOSet = u.utxos
+  const avmUTXOResponse: iAVMUTXOResponse = await xchain.getUTXOs(xAddressStrings)
+  const utxoSet: UTXOSet = avmUTXOResponse.utxos
   const utxos: UTXO[] = utxoSet.getAllUTXOs()
   utxos.forEach((utxo: UTXO) => {
     const amountOutput: AmountOutput = utxo.getOutput() as AmountOutput
@@ -83,7 +73,7 @@ const main = async (): Promise<any> => {
     outputs,
     inputs,
     memo,
-    bintools.cb58Decode(cChainBlockchainID),
+    bintools.cb58Decode(pChainBlockchainID),
     exportedOuts
   )
   const unsignedTx: UnsignedTx = new UnsignedTx(exportTx)
