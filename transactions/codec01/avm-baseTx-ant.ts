@@ -41,7 +41,7 @@ const inputs: TransferableInput[] = []
 const fee: BN = xchain.getDefaultTxFee()
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("AVM manual BaseTx to send ANT")
+const memo: Buffer = bintools.stringToBuffer("AVM manual BaseTx to send AVAX and ANT")
     
 const main = async (): Promise<any> => {
   const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
@@ -88,15 +88,15 @@ const main = async (): Promise<any> => {
   const unsignedTx: UnsignedTx = new UnsignedTx(baseTx)
 
   // start uncomment for codecID 00 00
-  const tx: Tx = unsignedTx.sign(xKeychain)
-  const id: string = await xchain.issueTx(tx)
+  // const tx: Tx = unsignedTx.sign(xKeychain)
+  // const id: string = await xchain.issueTx(tx)
   // stop uncomment for codecID 00 00
 
   // start uncomment for codecID 00 01
-  // const codecID: number = 1
-  // const tx: Tx = unsignedTx.sign(xKeychain, codecID)
-  // const cb58EncodedTx: string = bintools.cb58Encode(tx.toBuffer(codecID))
-  // const id: string = await xchain.issueTx(cb58EncodedTx)
+  const codecID: number = 1
+  const tx: Tx = unsignedTx.sign(xKeychain, codecID)
+  const cb58EncodedTx: string = bintools.cb58Encode(tx.toBuffer(codecID))
+  const id: string = await xchain.issueTx(cb58EncodedTx)
   // stop uncomment for codecID 00 01
 
   console.log(id)

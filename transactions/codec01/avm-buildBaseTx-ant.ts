@@ -12,7 +12,6 @@ import {
   Tx
 } from "avalanche/dist/apis/avm"
 import { 
-  iGetBalanceResponse, 
   iAVMUTXOResponse 
 } from "avalanche/dist/apis/avm/interfaces"
 import { UnixNow } from "avalanche/dist/utils"
@@ -25,27 +24,26 @@ const avalanche: Avalanche = new Avalanche(ip, port, protocol, networkID)
 const xchain: AVMAPI = avalanche.XChain()
 const bintools: BinTools = BinTools.getInstance()
 const xKeychain: AVMKeyChain = xchain.keyChain()
-const privKey: string = "PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
+const privKey: string = "PrivateKey-2KFKhXh9wPs9PfHC9btUF1n9rGAio2LHXin58j1SJzvWD38qm"
 xKeychain.importKey(privKey)
 const xAddressStrings: string[] = xchain.keyChain().getAddressStrings()
 const asOf: BN = UnixNow()
 const threshold: number = 1
 const locktime: BN = new BN(0)
-const memo: Buffer = bintools.stringToBuffer("AVM utility method buildBaseTx to send AVAX")
-const fee: BN = xchain.getDefaultTxFee()
+const memo: Buffer = bintools.stringToBuffer("AVM utility method buildBaseTx to send an ANT")
     
 const main = async (): Promise<any> => {
-  const avaxAssetID: Buffer = await xchain.getAVAXAssetID()
-  const getBalanceResponse: iGetBalanceResponse = await xchain.getBalance(xAddressStrings[0], bintools.cb58Encode(avaxAssetID))
-  const balance: BN = new BN(getBalanceResponse.balance)
+  const amount: BN = new BN(5)
   const avmUTXOResponse: iAVMUTXOResponse = await xchain.getUTXOs(xAddressStrings)
   const utxoSet: UTXOSet = avmUTXOResponse.utxos
+  const assetID: string = "2iM5ZYLkp9ZwZKY12smdeN1gDkXucY2muUUebYMyjTJHMwEYiW"
+  const toAddr: string = "X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u"
 
   const unsignedTx: UnsignedTx = await xchain.buildBaseTx(
     utxoSet,
-    balance.sub(fee),
-    avaxAssetID,
-    xAddressStrings,
+    amount,
+    assetID,
+    [toAddr],
     xAddressStrings,
     xAddressStrings,
     memo,
@@ -55,8 +53,8 @@ const main = async (): Promise<any> => {
   )
 
   // start uncomment for codecID 00 00
-  // const tx: Tx = unsignedTx.sign(xKeychain)
-  // const id: string = await xchain.issueTx(tx)
+//   const tx: Tx = unsignedTx.sign(xKeychain)
+//   const id: string = await xchain.issueTx(tx)
   // stop uncomment for codecID 00 00
 
   // start uncomment for codecID 00 01
